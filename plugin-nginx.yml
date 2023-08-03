@@ -1,0 +1,144 @@
+---
+- name: Install and configure nginx
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Wait for system to become reachable
+      wait_for_connection:
+        timeout: 300
+
+    - name: Gather facts for first time
+      setup:
+
+    - name: Install required packages other distros
+      when: ansible_facts["distribution_major_version"] != "7" and ansible_distribution != 'CentOS'
+      package:
+        name:
+        - nginx
+        - certbot
+        - python3-certbot-nginx
+        state: present
+
+    - name: Install required packages CentOS 7
+      when: ansible_facts["distribution_major_version"] == "7" and ansible_distribution == 'CentOS'
+      package:
+        name:
+        - nginx
+        - certbot
+        - python2-certbot-nginx
+        state: present
+
+    - name: Create app location config dir
+      file:
+        path: /etc/nginx/app-location-conf.d
+        state: directory
+        mode: '0755'
+        recurse: yes
+
+    - name: Add map directive
+      copy:
+        src: nginx/conf.d/map-upgrade.conf
+        dest: /etc/nginx/conf.d/map-upgrade.conf
+        mode: 0644
+
+    - name: Copy nginx config
+      template:
+        src: files/nginx/conf.d/ssl_main.conf
+        dest: /etc/nginx/conf.d/ssl_main.conf
+        mode: 0644
+      
+    - name: Remove default nginx config
+      file:
+        dest: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Increase server name hash bucket size to 128
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        state: present
+        firstmatch: true
+        insertafter: '^http \{$'
+        line: '    server_names_hash_bucket_size 128;'
+
+    - name: Unlimited client max body size 
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        state: present
+        firstmatch: true
+        insertafter: '^http \{$'
+        line: '    client_max_body_size 0;'
+
+    - name: Remove potential duplicate listen configs
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: "^\\w*listen[^;]*;" 
+        state: absent                
+
+    - name: Make sure nginx is enabled
+      service:
+        name: nginx
+        enabled: yes
+    
+    - name: Make sure nginx is started
+      service:
+        name: nginx
+        state: started
+      register: nginx_service_started
+
+    - name: Reload nginx
+      service:
+        name: nginx
+        state: reloaded
+
+    - name: certbot test
+      command: curl {{ rsc_nginx_service_url }}
+
+    - name: Run Certbot
+      command:  certbot --nginx -n --agree-tos --register-unsafely-without-email  -d {{ rsc_nginx_service_url }}
+
+    - name: Create certbot cron job
+      cron:
+        name: "Renew the certificate"
+        minute: "0"
+        hour: "12"
+        job: "/usr/bin/certbot renew --quiet"
+
+
+    # firewalld is now switched off in the os-plugin
+    # - name: install and configure firewalld
+    #   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Fedora'
+    #   block:
+    #   - name: Install Firewalld
+    #     package:
+    #        name: firewalld
+    #        state: present
+
+    #   - name: Enable and start Firewalld
+    #     service:
+    #       name: firewalld
+    #       state: started
+    #       enabled: yes
+
+    #   - name: Open port 443
+    #     firewalld:
+    #       port: 443/tcp
+    #       permanent: yes
+    #       state: enabled
+
+    #   - name: Reload firewalld
+    #     service:
+    #       name: firewalld
+    #       state: reloaded
+
+    #   - name: Set SELinux boolean for httpd
+    #     seboolean:
+    #       name: httpd_can_network_connect
+    #       state: yes
+    #       persistent: yes
+
+    # - name: Ensure port 443 is allowed
+    #   when: ansible_distribution == 'Ubuntu'
+    #   ufw:
+    #     rule: allow
+    #     port: 443
