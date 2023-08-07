@@ -43,7 +43,7 @@
         mode: 0777
 
     - name: Generate nginx_constants.conf
-      script: /etc/nginx/nginx_constants.sh
+      shell: sh /etc/nginx/nginx_constants.sh
       environment:
         AUTHORIZATION_ENDPOINT: rsc_nginx_authorization_endpoint
         USER_INFO_ENDPOINT: rsc_nginx_user_info_endpoint
