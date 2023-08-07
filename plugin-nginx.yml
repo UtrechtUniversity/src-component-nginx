@@ -51,9 +51,9 @@
     - name: Generate nginx_constants.conf
       shell: sh /etc/nginx/nginx_constants.sh
       environment:
-        AUTHORIZATION_ENDPOINT: {{ rsc_nginx_authorization_endpoint }}
-        USER_INFO_ENDPOINT: {{ rsc_nginx_user_info_endpoint }}
-        USER_HEADER_NAME: {{ rsc_nginx_user_header_name }}
+        AUTHORIZATION_ENDPOINT: "{{ rsc_nginx_authorization_endpoint }}"
+        USER_INFO_ENDPOINT: "{{ rsc_nginx_user_info_endpoint }}"
+        USER_HEADER_NAME: "{{ rsc_nginx_user_header_name }}"
 
     # - name: Add authentication.conf
     #   copy:
