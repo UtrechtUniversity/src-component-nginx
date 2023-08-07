@@ -50,7 +50,7 @@
         USER_HEADER_NAME: rsc_nginx_user_header_name
 
     - name: cat nginx_constants.conf
-      shell: cat/etc/nginx/app-location-conf.d/constants.conf
+      shell: cat /etc/nginx/app-location-conf.d/constants.conf
   
     # - name: Add authentication.conf
     #   copy:
