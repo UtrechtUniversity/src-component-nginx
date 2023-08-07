@@ -24,7 +24,7 @@
 
     - name: Install lua packages
       when: ansible_facts["distribution_major_version"] != "7" and ansible_distribution != 'CentOS'
-      shell: luarocks install http && luarocks install lua-cjson
+      shell: luarocks install lua-cjson
 
     - name: Install required packages CentOS 7
       when: ansible_facts["distribution_major_version"] == "7" and ansible_distribution == 'CentOS'
