@@ -18,7 +18,14 @@
         - nginx
         - certbot
         - python3-certbot-nginx
+        - nginx-plus-module-ndk
+        - libnginx-mod-http-lua
+        - luarocks
         state: present
+
+    - name: Install lua packages
+      when: ansible_facts["distribution_major_version"] != "7" and ansible_distribution != 'CentOS'
+      shell: luarocks install http && luarocks install lua-cjson
 
     - name: Install required packages CentOS 7
       when: ansible_facts["distribution_major_version"] == "7" and ansible_distribution == 'CentOS'
@@ -45,9 +52,9 @@
     - name: Generate nginx_constants.conf
       shell: sh /etc/nginx/nginx_constants.sh
       environment:
-        AUTHORIZATION_ENDPOINT: rsc_nginx_authorization_endpoint
-        USER_INFO_ENDPOINT: rsc_nginx_user_info_endpoint
-        USER_HEADER_NAME: rsc_nginx_user_header_name
+        AUTHORIZATION_ENDPOINT: {{ rsc_nginx_authorization_endpoint }}
+        USER_INFO_ENDPOINT: {{ rsc_nginx_user_info_endpoint }}
+        USER_HEADER_NAME: {{ rsc_nginx_user_header_name }}
 
     - name: cat nginx_constants.conf
       shell: cat /etc/nginx/app-location-conf.d/constants.conf
