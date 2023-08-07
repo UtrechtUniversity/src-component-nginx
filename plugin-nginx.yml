@@ -18,7 +18,6 @@
         - nginx
         - certbot
         - python3-certbot-nginx
-        - nginx-plus-module-ndk
         - libnginx-mod-http-lua
         - luarocks
         state: present
@@ -56,13 +55,10 @@
         USER_INFO_ENDPOINT: {{ rsc_nginx_user_info_endpoint }}
         USER_HEADER_NAME: {{ rsc_nginx_user_header_name }}
 
-    - name: cat nginx_constants.conf
-      shell: cat /etc/nginx/app-location-conf.d/constants.conf
-  
     # - name: Add authentication.conf
     #   copy:
     #     src: nginx/conf.d/authentication.conf
-    #     dest: /etc/nginx/conf.d/authentication.conf
+    #     dest: /etc/nginx/app-location-conf.d/authentication.conf
     #     mode: 0644
   
     - name: Add map directive
