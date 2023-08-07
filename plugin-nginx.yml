@@ -36,6 +36,21 @@
         mode: '0755'
         recurse: yes
 
+    - name: Copy nginx_constants.sh
+      copy:
+        src: files/nginx_constants.sh
+        dest: /etc/nginx/nginx_constants.sh
+        mode: 0777
+
+    - name: Generate nginx_constants.conf
+      script: /etc/nginx/nginx_constants.sh
+
+    - name: Add authentication.conf
+      copy:
+        src: nginx/conf.d/authentication.conf
+        dest: /etc/nginx/conf.d/authentication.conf
+        mode: 0644
+  
     - name: Add map directive
       copy:
         src: nginx/conf.d/map-upgrade.conf
