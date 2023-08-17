@@ -42,18 +42,15 @@
         mode: '0755'
         recurse: yes
 
-    - name: Copy nginx_constants.sh
-      copy:
-        src: files/nginx_constants.sh
-        dest: /etc/nginx/nginx_constants.sh
-        mode: 0777
-
-    - name: Generate nginx_constants.conf
-      shell: sh /etc/nginx/nginx_constants.sh
-      environment:
-        AUTHORIZATION_ENDPOINT: "{{ rsc_nginx_authorization_endpoint }}"
-        USER_INFO_ENDPOINT: "{{ rsc_nginx_user_info_endpoint }}"
-        USER_HEADER_NAME: "{{ rsc_nginx_user_header_name }}"
+    - name: Generate constants.conf
+    copy:
+      dest: /etc/nginx/app-location-conf.d/constants.conf
+      mode: 0644
+      content: |
+        set \$client_id "{{ oauth2_application.client_id if oauth2_application != "" else default('') }}";
+        set \$authorization_endpoint "{{ rsc_nginx_authorization_endpoint }}";
+        set \$userinfo_endpoint "{{ rsc_nginx_user_info_endpoint }}";
+        set \$header_name  "{{ rsc_nginx_user_header_name }}";
 
     - name: Add authentication.conf
       copy:
