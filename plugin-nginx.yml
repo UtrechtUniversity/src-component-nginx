@@ -47,10 +47,10 @@
         dest: /etc/nginx/app-location-conf.d/constants.conf
         mode: 0644
         content: |
-          set \$client_id "{{ rsc_nginx_oauth2_application.client_id if rsc_nginx_oauth2_application != '' else default('') }}";
-          set \$authorization_endpoint "{{ rsc_nginx_authorization_endpoint }}";
-          set \$userinfo_endpoint "{{ rsc_nginx_user_info_endpoint }}";
-          set \$header_name  "{{ rsc_nginx_user_header_name }}";
+          set $client_id "{{ rsc_nginx_oauth2_application.client_id if rsc_nginx_oauth2_application != '' else default('') }}";
+          set $authorization_endpoint "{{ rsc_nginx_authorization_endpoint }}";
+          set $userinfo_endpoint "{{ rsc_nginx_user_info_endpoint }}";
+          set $header_name  "{{ rsc_nginx_user_header_name }}";
 
     - name: "Read a file content"
       shell: |
