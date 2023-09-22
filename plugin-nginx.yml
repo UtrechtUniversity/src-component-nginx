@@ -1,6 +1,6 @@
 ---
 - name: Install and configure nginx
-  hosts: all
+  hosts: localhost
   gather_facts: true
 
   tasks:
@@ -18,13 +18,7 @@
         - nginx
         - certbot
         - python3-certbot-nginx
-        - libnginx-mod-http-lua
-        - luarocks
         state: present
-
-    - name: Install lua packages
-      when: ansible_facts["distribution_major_version"] != "7" and ansible_distribution != 'CentOS'
-      shell: luarocks install lua-cjson
 
     - name: Install required packages CentOS 7
       when: ansible_facts["distribution_major_version"] == "7" and ansible_distribution == 'CentOS'
@@ -134,42 +128,3 @@
         minute: "0"
         hour: "12"
         job: "/usr/bin/certbot renew --quiet"
-
-
-    # firewalld is now switched off in the os-plugin
-    # - name: install and configure firewalld
-    #   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Fedora'
-    #   block:
-    #   - name: Install Firewalld
-    #     package:
-    #        name: firewalld
-    #        state: present
-
-    #   - name: Enable and start Firewalld
-    #     service:
-    #       name: firewalld
-    #       state: started
-    #       enabled: yes
-
-    #   - name: Open port 443
-    #     firewalld:
-    #       port: 443/tcp
-    #       permanent: yes
-    #       state: enabled
-
-    #   - name: Reload firewalld
-    #     service:
-    #       name: firewalld
-    #       state: reloaded
-
-    #   - name: Set SELinux boolean for httpd
-    #     seboolean:
-    #       name: httpd_can_network_connect
-    #       state: yes
-    #       persistent: yes
-
-    # - name: Ensure port 443 is allowed
-    #   when: ansible_distribution == 'Ubuntu'
-    #   ufw:
-    #     rule: allow
-    #     port: 443
