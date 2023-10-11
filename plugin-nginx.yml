@@ -110,9 +110,10 @@
           }
 
           location = /test {
+              error_page 401 = @custom_401;
               auth_request /validate;
               auth_request_set $username $upstream_http_username;
-              proxy_set_header {{ rsc_nginx_user_header_name }} $username;
+              proxy_set_header REMOTE_USER $username;
           }
 
           location = /validate {
