@@ -44,17 +44,20 @@
       shell: snap install core; snap refresh core
       changed_when: true
       failed_when: false
-
+    
     - name: Install certbot
-      snap:
-        name: certbot
-        classic: yes
+      when: nginx_enable_ssl
+      block:
+        - name: Install certbot
+          snap:
+            name: certbot
+            classic: yes
 
-    - name: Symlink certbot into place
-      file:
-        src: /snap/bin/certbot
-        dest: /usr/bin/certbot
-        state: link
+        - name: Symlink certbot into place
+          file:
+            src: /snap/bin/certbot
+            dest: /usr/bin/certbot
+            state: link
 
     - name: Create app location config dir
       file:
@@ -63,27 +66,8 @@
         mode: '0755'
         recurse: yes
 
-    # - name: Generate constants.conf
-    #   copy:
-    #     dest: /etc/nginx/app-location-conf.d/constants.conf
-    #     mode: 0644
-    #     content: |
-    #       set $client_id "{{ rsc_nginx_oauth2_application.client_id if rsc_nginx_oauth2_application != '' else default('') }}";
-    #       set $authorization_endpoint "{{ rsc_nginx_authorization_endpoint }}";
-    #       set $userinfo_endpoint "{{ rsc_nginx_user_info_endpoint }}";
-    #       set $header_name  "{{ rsc_nginx_user_header_name }}";
-
-    # - name: "Read a file content"
-    #   shell: |
-    #     cat /etc/nginx/app-location-conf.d/constants.conf
-    #   register: file_content
-
-    # - name: "Print the file content to a console"
-    #   debug:
-    #     msg: "{{ file_content.stdout }}"
-
-
     - name: Add authentication.conf
+      when: nginx_enable_auth
       copy:
         # src: nginx/conf.d/authentication.conf
         dest: /etc/nginx/app-location-conf.d/authentication.conf
@@ -213,15 +197,18 @@
         name: nginx
         state: reloaded
 
-    - name: certbot test
-      command: curl {{ rsc_nginx_service_url }}
+    - name: Run cerbot
+      when: nginx_enable_ssl
+      block:
+        - name: certbot test
+          command: curl {{ rsc_nginx_service_url }}
 
-    - name: Run Certbot
-      command:  certbot --nginx -n --agree-tos --register-unsafely-without-email  -d {{ rsc_nginx_service_url }}
+        - name: Run Certbot
+          command:  certbot --nginx -n --agree-tos --register-unsafely-without-email  -d {{ rsc_nginx_service_url }}
 
-    - name: Create certbot cron job
-      cron:
-        name: "Renew the certificate"
-        minute: "0"
-        hour: "12"
-        job: "/usr/bin/certbot renew --quiet"
+        - name: Create certbot cron job
+          cron:
+            name: "Renew the certificate"
+            minute: "0"
+            hour: "12"
+            job: "/usr/bin/certbot renew --quiet"
