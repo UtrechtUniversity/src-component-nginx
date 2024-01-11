@@ -142,6 +142,7 @@
             proxy_pass {{ rsc_nginx_user_info_endpoint }};
             proxy_pass_request_body off;
             proxy_set_header   Content-Length "";
+            proxy_set_header   Accept application/json;
             proxy_set_header   Authorization $cookie_authorization;
           }
 
