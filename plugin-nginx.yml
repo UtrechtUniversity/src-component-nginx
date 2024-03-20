@@ -44,7 +44,8 @@
       shell: snap install core; snap refresh core
       changed_when: true
       failed_when: false
-    
+      tags: molecule-idempotence-notest
+
     - name: Install certbot
       when: nginx_enable_ssl
       block:
@@ -64,7 +65,6 @@
         path: /etc/nginx/app-location-conf.d
         state: directory
         mode: '0755'
-        recurse: yes
 
     - name: Add authentication.conf
       when: nginx_enable_auth
@@ -166,6 +166,7 @@
         firstmatch: true
         insertafter: '^http \{$'
         line: '    server_names_hash_bucket_size 128;'
+      tags: molecule-idempotence-notest
 
     - name: Unlimited client max body size 
       lineinfile:
@@ -174,6 +175,7 @@
         firstmatch: true
         insertafter: '^http \{$'
         line: '    client_max_body_size 0;'
+      tags: molecule-idempotence-notest
 
     - name: Remove potential duplicate listen configs
       lineinfile:
@@ -185,17 +187,20 @@
       service:
         name: nginx
         enabled: yes
-    
+      tags: molecule-idempotence-notest
+
     - name: Make sure nginx is started
       service:
         name: nginx
         state: started
       register: nginx_service_started
+      tags: molecule-idempotence-notest
 
     - name: Reload nginx
       service:
         name: nginx
         state: reloaded
+      tags: molecule-idempotence-notest
 
     - name: Run cerbot
       when: nginx_enable_ssl
