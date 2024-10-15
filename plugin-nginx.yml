@@ -92,6 +92,10 @@
           location @custom_401 {
             internal;
 
+              if ($cookie_redirecturi = "") {
+                add_header Set-Cookie "redirecturi=$request_uri;path=/oauth2_callback;Max-Age=300;";
+              }
+
             return 302 "{{rsc_nginx_authorization_endpoint}}?client_id={{ rsc_nginx_oauth2_application.client_id if rsc_nginx_oauth2_application != '' else default('') }}&redirect_uri=$scheme://$http_host/oauth2_callback&response_type=token&scope=openid&response_format=query_param";
           }
 
@@ -112,15 +116,23 @@
             if ($access_token ~ "^$") {
               return 403 "Unauthorized";
             } 
+
+            set $redirectpath "/";
           
             add_header Set-Cookie "Authorization=$access_token;Path=/;Max-Age=$expires_in";
+            add_header Set-Cookie "redirecturi=;Path=/oauth2_callback;expires=Thu, 01 Jan 1970 00:00:00 GMT;";
 
-            return 302 $scheme://$http_host/;
+            if ($cookie_redirecturi) {
+              set $redirectpath $cookie_redirecturi;
+            }
+
+            return 302 $scheme://$host$redirectpath;
           }
 
           location = /logout {
             add_header Content-Type text/html;
             add_header Set-Cookie "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            add_header Set-Cookie "redirecturi=;Path=/oauth2_callback;Max-Age=0";
 
             return 200 'User logged out !';
           }
