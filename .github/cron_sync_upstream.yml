@@ -1,0 +1,39 @@
+on:
+  schedule:
+    - cron: '1 0 * * MON' # 1 past midnight on Monday
+  workflow_dispatch:
+
+jobs:
+  sync_upstream:
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+        pull-requests: write
+      env:
+        UPSTREAM: https://gitlab.com/rsc-surf-nl/plugins/plugin-nginx.git
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+        - name: Debug
+          run: git --version && ls -l
+        - name: Define upstream
+          run: git remote add upstream ${{ env.UPSTREAM }}
+        - name: Configure git
+          run: |
+            git config user.name "GitHubActions"
+            git config user.email "<>"
+        - name: Pull from upstream
+          run: git pull upstream main -s ort --rebase -Xignore-all-space -Xours
+        - name: Debug
+          run: grep -r "<<<<<<<" . --context=10
+        - name: Debug
+          run: git log
+        - name: Run yamllint syntax check
+          run: pip install yamllint && yamllint -d "{rules:{}}" .
+        - name: Create Pull Request
+          uses: peter-evans/create-pull-request@v7
+          with:
+            title: Merge changes from upstream (cron)
+  
